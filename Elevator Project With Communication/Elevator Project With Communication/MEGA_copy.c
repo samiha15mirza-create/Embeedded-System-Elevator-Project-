@@ -5,7 +5,7 @@
  *  Author: htink
  */ 
 
-#define F_CPU 16000000UL
+#define F_CPU 16000000UL 
 //#define FOSC 16000000UL
 
 // Imported Libraries
@@ -124,19 +124,19 @@ void spi_master_receive(uint8_t *buffer, uint8_t length)
 
     buffer[length] = '\0'; // make it string-safe
 }
-
+// Emergency function . It returns 0 and 1 
 uint8_t Emergency_Pressed(){
-    if (!(PINH & (1<<PH4)))
+    if (!(PINH & (1<<PH4))) // This checks whether the button is pressed or not . 
     {
         printf("Button for emergency is pressed.");
         // LED is still on D12 (PB6)
         DDRB |= (1 << PB6);   // set as output
 
-        // Turn LED ON
+        // Turn LED ON  BY MAKING THE PORT HIGH
         PORTB |= (1 << PB6);
         DELAY_ms(2000);
 
-        // Turn LED OFF
+        // Turn LED OFF BY MAKING PORT LOW 
         PORTB &= ~(1 << PB6);
         DELAY_ms(2000);
         
@@ -246,21 +246,20 @@ static int16_t floor_choice(void)
         }
     }
 }
-
-
-state_t choose_direction(int16_t destination_floor)
+// This function is for choosing direction . 
+Tstate_t choose_direction(int16_t destination_floor)
 {
-    if (destination_floor > CURRENT_FLOOR) {
-        return GOINGUP;
+    if (destination_floor > CURRENT_FLOOR) { // If destination floor is higher than current floor
+        return GOINGUP; // then it will return to going up 
     }
-    else if (destination_floor < CURRENT_FLOOR) {
+    else if (destination_floor < CURRENT_FLOOR) { // If destination floor is lower than current floor 
         return GOINGDOWN;
     }
-    else if (destination_floor == CURRENT_FLOOR){
+    else if (destination_floor == CURRENT_FLOOR){ // if destination floor is the current floor
         lcd_clrscr();
-        write_to_lcd("Same floor");
+        write_to_lcd("Same floor"); // in lcd shows same floor
         DELAY_ms(2000);
-        return IDLE;
+        return IDLE; // goes to idle
     }
     return IDLE;
 }
@@ -276,23 +275,23 @@ void lcd_display_floor(int16_t floor)
     snprintf(buf, sizeof(buf), "%d", floor);
     write_to_lcd(buf);
 }
-
-state_t going_up(int16_t destination_floor)
+// Going up function
+state_t going_up(int16_t destination_floor) 
 {
     
-    while (CURRENT_FLOOR < destination_floor) {
-        CURRENT_FLOOR++;
-        lcd_display_floor(CURRENT_FLOOR);
+    while (CURRENT_FLOOR < destination_floor) { // this loop will go on as long as current floor is lower than destination
+        CURRENT_FLOOR++; // current floor number increase
+        lcd_display_floor(CURRENT_FLOOR); // lcd displays current floor
         DELAY_ms(FLOOR_MOVING_SPEED_MS);
         //printf("After floor choice queue");            
-        if (Emergency_Pressed()){
+        if (Emergency_Pressed()){ // if emergency is pressed , returns to fault
             return FAULT;
         }
     }
     
-    printf("Going up is done\r\n");
+    printf("Going up is done\r\n"); // debug purpose 
     
-    return DOOR_OPENING;
+    return DOOR_OPENING; // return to door open 
 }
 
 state_t going_down(int16_t destination_floor)
